@@ -1,0 +1,107 @@
+"use client";
+
+import { ActionSheetItem, IconButton, SegmentedControl, Tooltip, cn } from "datui";
+import { Download, FileUp, Maximize2, Minimize2, MoreHorizontal, PanelLeft } from "lucide-react";
+import { useRef, useState } from "react";
+import { DocMenu } from "@/components/app/DocMenu";
+import { useApp } from "@/components/app/context";
+import type { SaveStatus as Status } from "@/hooks/useAutosave";
+import type { EditorMode } from "@/hooks/usePrefs";
+import { downloadFile, fileName } from "@/lib/files";
+import type { Doc } from "@/lib/storage/types";
+import { SaveStatus } from "./SaveStatus";
+import { TitleInput } from "./TitleInput";
+
+const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
+export const MOD = isMac ? "⌘" : "Ctrl+";
+
+function HeaderButton({ label, shortcut, ...rest }: React.ComponentProps<typeof IconButton> & { label: string; shortcut?: string }) {
+  return (
+    <Tooltip title={shortcut ? `${label}  ${shortcut}` : label} hoverDelay={400}>
+      <IconButton label={label} size="s" {...rest} />
+    </Tooltip>
+  );
+}
+
+export function EditorHeader({ doc, status }: { doc: Doc; status: Status }) {
+  const app = useApp();
+  const { folders, mode, setMode, focus, setFocus, isMobile, sidebarVisible, toggleSidebar, importFiles } = app;
+  const folder = folders.find((f) => f.id === doc.folderId);
+  const moreRef = useRef<HTMLElement>(null);
+  const titleRef = useRef<HTMLInputElement>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const modes = [
+    { value: "edit", label: "Edit" },
+    { value: "preview", label: "Preview" },
+    ...(isMobile ? [] : [{ value: "split", label: "Split" }]),
+  ];
+
+  return (
+    <header
+      className={cn(
+        "flex h-12 shrink-0 items-center gap-2 px-3 transition-opacity duration-normal",
+        !focus && "border-b border-separator",
+        focus && "opacity-0 hover:opacity-100 focus-within:opacity-100",
+      )}
+    >
+      {(!sidebarVisible || isMobile) && (
+        <HeaderButton label={isMobile ? "Open sidebar" : "Show sidebar"} shortcut={`${MOD}\\`} onClick={toggleSidebar}>
+          <PanelLeft />
+        </HeaderButton>
+      )}
+
+      <nav aria-label="Breadcrumb" className="flex min-w-0 flex-1 items-center gap-1 text-[14px]">
+        {!isMobile && (
+          <>
+            <span className="shrink-0 truncate text-muted-foreground">{folder?.name ?? "Notes"}</span>
+            <span className="text-subtle-foreground" aria-hidden>
+              /
+            </span>
+          </>
+        )}
+        <TitleInput key={doc.id} doc={doc} ref={titleRef} />
+      </nav>
+
+      <SaveStatus status={status} />
+
+      <SegmentedControl
+        aria-label="Editor view"
+        className={cn("shrink-0", isMobile ? "w-[168px]" : "w-[252px]")}
+        options={modes}
+        value={mode}
+        onChange={(v) => setMode(v as EditorMode)}
+      />
+
+      {!isMobile && (
+        <HeaderButton
+          label={focus ? "Exit focus mode" : "Focus mode"}
+          shortcut={`${MOD}⇧F`}
+          aria-pressed={focus}
+          onClick={() => setFocus(!focus)}
+        >
+          {focus ? <Minimize2 /> : <Maximize2 />}
+        </HeaderButton>
+      )}
+      {!isMobile && (
+        <HeaderButton label="Export as Markdown" onClick={() => downloadFile(fileName(doc.title, "md"), doc.content)}>
+          <Download />
+        </HeaderButton>
+      )}
+      <HeaderButton label="More actions" ref={moreRef} aria-haspopup="menu" onClick={() => setMenuOpen(true)}>
+        <MoreHorizontal />
+      </HeaderButton>
+      <DocMenu
+        doc={doc}
+        open={menuOpen}
+        onOpenChange={setMenuOpen}
+        anchorRef={moreRef}
+        onRename={() => titleRef.current?.focus()}
+      >
+        <ActionSheetItem before={<FileUp />} onClick={() => void importFiles()}>
+          Import Markdown files…
+        </ActionSheetItem>
+      </DocMenu>
+    </header>
+  );
+}
