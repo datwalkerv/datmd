@@ -6,7 +6,7 @@ import { tags as t } from "@lezer/highlight";
 export const editorTheme = EditorView.theme({
   "&": { height: "100%", backgroundColor: "transparent", color: "var(--dt-foreground)", fontSize: "var(--editor-font-size)" },
   "&.cm-focused": { outline: "none" },
-  ".cm-scroller": { fontFamily: "var(--font-writing)", lineHeight: "1.75", overflowX: "hidden" },
+  ".cm-scroller": { fontFamily: "var(--font-writing)", lineHeight: "var(--editor-line-height)", overflowX: "hidden" },
   ".cm-content": {
     maxWidth: "var(--editor-width)",
     margin: "0 auto",
@@ -75,7 +75,7 @@ const markdownHighlight = HighlightStyle.define([
   // fenced code languages
   { tag: [t.keyword, t.operatorKeyword, t.modifier], color: "var(--dt-primary)" },
   { tag: [t.string, t.special(t.string)], color: "var(--dt-positive)" },
-  { tag: [t.number, t.bool, t.atom], color: "var(--dt-warning)" },
+  { tag: [t.number, t.bool, t.atom], color: "var(--dt-muted-foreground)" },
   { tag: t.comment, color: "var(--dt-subtle-foreground)", fontStyle: "italic" },
   { tag: [t.typeName, t.className], color: "var(--dt-link)" },
 ]);

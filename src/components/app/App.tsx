@@ -1,6 +1,6 @@
 "use client";
 
-import { AppRoot, ConfigProvider, FocusTrap, Snackbar, cn, useMediaQuery } from "datui";
+import { AppRoot, ConfigProvider, FocusTrap, Snackbar, VisuallyHidden, cn, useMediaQuery } from "datui";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Workspace } from "@/components/editor/Workspace";
@@ -8,10 +8,11 @@ import { SearchDialog } from "@/components/search/SearchDialog";
 import { SettingsModal } from "@/components/settings/SettingsModal";
 import { TemplatePicker } from "@/components/templates/TemplatePicker";
 import { Sidebar } from "@/components/sidebar/Sidebar";
-import { type EditorMode, setPrefs, usePrefs } from "@/hooks/usePrefs";
+import { EDITOR_WIDTHS, type EditorMode, FONT_STACKS, setPrefs, usePrefs } from "@/hooks/usePrefs";
 import { pickMarkdownFiles, readMarkdownFiles } from "@/lib/files";
 import { db } from "@/lib/storage/db";
 import { createDoc } from "@/lib/storage/docs";
+import { createFolder } from "@/lib/storage/folders";
 import { seedOnce } from "@/lib/storage/seed";
 import { type AppState, AppContext } from "./context";
 
@@ -54,15 +55,24 @@ export function App() {
 
   const importFiles = useCallback(
     async (files?: Iterable<File>) => {
-      const parsed = await readMarkdownFiles(files ?? (await pickMarkdownFiles()));
-      if (!parsed.length) return notify(files ? "No Markdown files found." : "Nothing imported.");
       try {
+        const parsed = await readMarkdownFiles(files ?? (await pickMarkdownFiles()));
+        if (!parsed.length) return notify(files ? "No Markdown files found." : "Nothing imported.");
+        // Zip directories map onto folders: reuse one with the same name, otherwise create it.
+        const folderIds = new Map((await db.folders.toArray()).map((f) => [f.name.toLowerCase(), f.id]));
         const created = [];
-        for (const f of parsed) created.push(await createDoc(f));
+        for (const { folder, ...note } of parsed) {
+          let folderId: string | null = null;
+          if (folder) {
+            folderId = folderIds.get(folder.toLowerCase()) ?? (await createFolder(folder)).id;
+            folderIds.set(folder.toLowerCase(), folderId);
+          }
+          created.push(await createDoc({ ...note, folderId }));
+        }
         open(created[0].id);
         notify(created.length === 1 ? `Imported “${created[0].title}”` : `Imported ${created.length} notes`);
-      } catch {
-        notify("Import failed. Storage may be full or blocked.");
+      } catch (e) {
+        notify(e instanceof Error && e.message === "Archive too large" ? "That archive is too large to import." : "Import failed. The file may be damaged or storage is full.");
       }
     },
     [open, notify],
@@ -171,7 +181,14 @@ export function App() {
       <AppRoot>
         <div
           className="flex h-dvh overflow-hidden bg-background text-foreground"
-          style={{ "--editor-font-size": `${prefs.fontSize}px` } as React.CSSProperties}
+          style={
+            {
+              "--editor-font-size": `${prefs.fontSize}px`,
+              "--editor-line-height": prefs.lineHeight,
+              "--editor-width": EDITOR_WIDTHS[prefs.editorWidth],
+              "--font-writing": FONT_STACKS[prefs.fontFamily],
+            } as React.CSSProperties
+          }
         >
           {/* Blank (not a spinner) for the few ms IndexedDB takes to answer. */}
           {value && (
@@ -209,6 +226,7 @@ export function App() {
                 </div>
               )}
               <main className="flex min-w-0 flex-1 flex-col">
+                <VisuallyHidden as="h1">datmd</VisuallyHidden>
                 <Workspace />
               </main>
               <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />

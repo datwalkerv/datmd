@@ -87,7 +87,7 @@ export function DocRowView({ doc, indent, renaming, setRenaming, dragRef, dragPr
           }}
           onDoubleClick={() => setRenaming(doc.id)}
           className={cn(
-            "flex h-8 w-full items-center gap-2 rounded-md pr-8 text-[13.5px] touch-manipulation",
+            "flex h-8 w-full items-center gap-2 rounded-md [@media(pointer:coarse)]:h-11 pr-8 text-[13.5px] touch-manipulation",
             indent ? "pl-6" : "pl-2",
             active ? "bg-foreground/[0.07] font-medium text-foreground" : "text-muted-foreground hover:text-foreground",
           )}

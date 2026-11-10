@@ -3,7 +3,7 @@
 import { ActionSheet, ActionSheetItem, Alert } from "datui";
 import { Copy, Download, FolderInput, Pencil, Pin, PinOff, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { downloadFile, fileName } from "@/lib/files";
+import { ExportSheet } from "@/components/export/ExportSheet";
 import { deleteDoc, duplicateDoc, moveDoc, setPinned } from "@/lib/storage/docs";
 import type { Doc } from "@/lib/storage/types";
 import { useApp } from "./context";
@@ -22,6 +22,7 @@ interface Props {
 export function DocMenu({ doc, open, onOpenChange, anchorRef, onRename, children }: Props) {
   const { folders, open: openDoc, notify } = useApp();
   const [moving, setMoving] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const fail = (what: string) => () => notify(`Couldn't ${what}. Please try again.`);
 
@@ -50,8 +51,8 @@ export function DocMenu({ doc, open, onOpenChange, anchorRef, onRename, children
         >
           Duplicate
         </ActionSheetItem>
-        <ActionSheetItem before={<Download />} onClick={() => downloadFile(fileName(doc.title, "md"), doc.content)}>
-          Export as Markdown
+        <ActionSheetItem before={<Download />} onClick={() => setExporting(true)}>
+          Export…
         </ActionSheetItem>
         {children}
         <ActionSheetItem before={<Trash2 />} mode="destructive" onClick={() => setConfirming(true)}>
@@ -71,6 +72,8 @@ export function DocMenu({ doc, open, onOpenChange, anchorRef, onRename, children
           </ActionSheetItem>
         ))}
       </ActionSheet>
+
+      <ExportSheet doc={doc} open={exporting} onOpenChange={setExporting} anchorRef={anchorRef} />
 
       <Alert
         open={confirming}

@@ -4,15 +4,16 @@ import { saveContent } from "@/lib/storage/docs";
 
 export type SaveStatus = "idle" | "pending" | "saving" | "saved" | "error";
 
-const DELAY = 400;
 const RETRY = 2000;
 
 /** Debounced content writes. `flush()` resolves once everything queued is on disk (or failed). */
-export function useAutosave() {
+export function useAutosave(delay = 400) {
   const [status, setStatus] = useState<SaveStatus>("idle");
   const pending = useRef<{ id: string; content: string } | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const inflight = useRef<Promise<void>>(Promise.resolve());
+  const delayRef = useRef(delay);
+  delayRef.current = delay;
 
   const write = useCallback((): Promise<void> => {
     clearTimeout(timer.current);
@@ -39,18 +40,26 @@ export function useAutosave() {
       pending.current = { id, content };
       setStatus("pending");
       clearTimeout(timer.current);
-      timer.current = setTimeout(write, DELAY);
+      timer.current = setTimeout(write, delayRef.current);
     },
     [write],
   );
 
   useEffect(() => {
     const onHide = () => document.visibilityState === "hidden" && void write();
+    // Unsaved text when the tab closes: start the write and ask the browser to confirm leaving.
+    const onUnload = (e: BeforeUnloadEvent) => {
+      if (!pending.current) return;
+      void write();
+      e.preventDefault();
+    };
     document.addEventListener("visibilitychange", onHide);
     window.addEventListener("pagehide", write);
+    window.addEventListener("beforeunload", onUnload);
     return () => {
       document.removeEventListener("visibilitychange", onHide);
       window.removeEventListener("pagehide", write);
+      window.removeEventListener("beforeunload", onUnload);
       void write();
     };
   }, [write]);

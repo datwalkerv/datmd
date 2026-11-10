@@ -11,6 +11,14 @@ import { unified } from "unified";
 import { type CalcOptions, addCalculations } from "./calc";
 import { remarkCallouts } from "./callouts";
 import { rehypeLineMap } from "./lineMap";
+import type { Element } from "hast";
+import { visit } from "unist-util-visit";
+
+/** GFM task checkboxes have no label; give screen readers their state. */
+const rehypeTaskLabels = () => (tree: Root) =>
+  visit(tree, "element", (n: Element) => {
+    if (n.tagName === "input" && n.properties.type === "checkbox") n.properties.ariaLabel = n.properties.checked ? "Done" : "Not done";
+  });
 
 const attrs = defaultSchema.attributes ?? {};
 const schema: Schema = {
@@ -34,6 +42,7 @@ const processor = unified()
   .use(remarkRehype)
   .use(rehypeLineMap)
   .use(rehypeSanitize, schema)
+  .use(rehypeTaskLabels)
   .use(rehypeKatex, { throwOnError: false, strict: false, errorColor: "var(--dt-destructive)" })
   .use(rehypeHighlight, { detect: false, plainText: ["math", "mermaid", "text", "txt", "plain"] })
   .use(rehypeStringify)

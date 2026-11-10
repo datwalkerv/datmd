@@ -61,7 +61,7 @@ export function FolderItem({ folder, docs, renaming, setRenaming }: Props) {
               setMenuOpen(true);
             }}
             className={cn(
-              "flex h-8 w-full items-center gap-1.5 rounded-md pr-8 pl-1 text-[13.5px] text-muted-foreground hover:text-foreground",
+              "flex h-8 w-full items-center gap-1.5 rounded-md [@media(pointer:coarse)]:h-11 pr-8 pl-1 text-[13.5px] text-muted-foreground hover:text-foreground",
               isOver && "bg-primary/10 text-foreground ring-1 ring-primary/40",
             )}
           >

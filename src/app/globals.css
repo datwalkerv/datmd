@@ -7,6 +7,14 @@
   --font-writing: var(--dt-font-sans);
   --editor-width: 720px;
   --editor-font-size: 17px;
+  --editor-line-height: 1.75;
+}
+
+/* datui's light "subtle" grey is 3.2–3.5:1 on our surfaces; this one meets WCAG AA (≥ 4.8:1). Dark already passes. */
+/* (AppRoot repeats data-theme on its own element, so target that too.) */
+:root:not([data-theme="dark"]),
+[data-theme="light"] {
+  --dt-subtle-foreground: #686863;
 }
 
 html,
@@ -23,7 +31,7 @@ body {
   padding: 48px 32px 40vh;
   font-family: var(--font-writing);
   font-size: var(--editor-font-size);
-  line-height: 1.75;
+  line-height: var(--editor-line-height);
   color: var(--dt-foreground);
   overflow-wrap: break-word;
 }
@@ -87,7 +95,8 @@ body {
 }
 .prose-datmd .callout > :last-child { margin-bottom: 0; }
 .prose-datmd .callout > :nth-child(2) { margin-top: 0.2em; }
-.prose-datmd .callout-title { display: flex; align-items: center; gap: 0.5em; margin: 0; font-weight: 650; color: var(--callout); }
+.prose-datmd .callout-title { display: flex; align-items: center; gap: 0.5em; margin: 0; font-weight: 650; color: var(--dt-foreground); }
+.prose-datmd .callout-title::before { color: var(--callout); }
 .prose-datmd .callout-title::before {
   content: "";
   width: 1.05em;
@@ -128,7 +137,7 @@ body {
 .prose-datmd .hljs-comment, .prose-datmd .hljs-quote { color: var(--dt-subtle-foreground); font-style: italic; }
 .prose-datmd :is(.hljs-keyword, .hljs-selector-tag, .hljs-built_in, .hljs-literal, .hljs-meta .hljs-keyword) { color: var(--dt-primary); }
 .prose-datmd :is(.hljs-string, .hljs-regexp, .hljs-addition, .hljs-template-tag) { color: var(--dt-positive); }
-.prose-datmd :is(.hljs-number, .hljs-symbol, .hljs-bullet, .hljs-variable.language_) { color: var(--dt-warning); }
+.prose-datmd :is(.hljs-number, .hljs-symbol, .hljs-bullet, .hljs-variable.language_) { color: var(--dt-muted-foreground); }
 .prose-datmd :is(.hljs-title, .hljs-section, .hljs-type, .hljs-class .hljs-title, .hljs-attr, .hljs-attribute, .hljs-name) { color: var(--dt-link); }
 .prose-datmd :is(.hljs-deletion) { color: var(--dt-destructive); }
 .prose-datmd :is(.hljs-meta, .hljs-punctuation, .hljs-tag) { color: var(--dt-muted-foreground); }

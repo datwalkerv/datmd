@@ -49,7 +49,7 @@ export function Preview({
 
   // Diagrams are drawn after each render (from cache when unchanged, so typing doesn't flicker them).
   useLayoutEffect(() => {
-    if (root.current && html.includes("language-mermaid")) hydrateMermaid(root.current, dark);
+    if (root.current && html.includes("language-mermaid")) void hydrateMermaid(root.current, dark);
   }, [html, dark]);
 
   useImperativeHandle(ref, () => ({

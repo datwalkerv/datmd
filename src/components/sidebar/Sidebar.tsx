@@ -196,8 +196,8 @@ export function Sidebar() {
         <Button size="s" variant="tertiary" appearance="neutral" before={<Settings className="size-4" />} className="text-muted-foreground" onClick={openSettings}>
           Settings
         </Button>
-        <Tooltip title="Import Markdown files" hoverDelay={400}>
-          <IconButton size="s" label="Import Markdown files" className="ml-auto text-muted-foreground" onClick={() => void importFiles()}>
+        <Tooltip title="Import Markdown or .zip" hoverDelay={400}>
+          <IconButton size="s" label="Import Markdown or .zip" className="ml-auto text-muted-foreground" onClick={() => void importFiles()}>
             <FileUp />
           </IconButton>
         </Tooltip>

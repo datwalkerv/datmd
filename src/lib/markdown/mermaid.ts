@@ -39,8 +39,12 @@ function apply(pre: HTMLElement, out: Out) {
   }
 }
 
-/** Replaces ```mermaid code blocks inside `root` with rendered diagrams (cached by source + theme). */
-export function hydrateMermaid(root: HTMLElement, dark: boolean) {
+/**
+ * Replaces ```mermaid code blocks inside `root` with rendered diagrams (cached by source + theme).
+ * Cached diagrams are applied synchronously; the promise resolves once the rest are drawn.
+ */
+export function hydrateMermaid(root: HTMLElement, dark: boolean): Promise<void> {
+  const pending: Promise<void>[] = [];
   for (const code of root.querySelectorAll<HTMLElement>("pre > code.language-mermaid")) {
     const pre = code.parentElement!;
     const src = code.textContent ?? "";
@@ -51,10 +55,13 @@ export function hydrateMermaid(root: HTMLElement, dark: boolean) {
       continue;
     }
     pre.classList.add("mermaid-loading");
-    void render(src, dark).then((out) => {
-      if (cache.size > 100) cache.clear();
-      cache.set(key, out);
-      if (pre.isConnected && pre.contains(code)) apply(pre, out);
-    });
+    pending.push(
+      render(src, dark).then((out) => {
+        if (cache.size > 100) cache.clear();
+        cache.set(key, out);
+        if (pre.contains(code)) apply(pre, out);
+      }),
+    );
   }
+  return Promise.all(pending).then(() => {});
 }

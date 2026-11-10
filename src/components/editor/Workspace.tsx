@@ -2,10 +2,10 @@
 
 import { Button, Placeholder, cn, useMediaQuery } from "datui";
 import { FilePlus2, NotebookPen } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useApp } from "@/components/app/context";
 import { Outline } from "@/components/outline/Outline";
-import { Preview, type PreviewHandle } from "@/components/preview/Preview";
+import type { PreviewHandle } from "@/components/preview/Preview";
 import { useAutosave } from "@/hooks/useAutosave";
 import { usePrefs } from "@/hooks/usePrefs";
 import { type Heading, extractHeadings } from "@/lib/markdown/outline";
@@ -16,12 +16,15 @@ import { StatusBar } from "./StatusBar";
 
 const PREVIEW_DEBOUNCE = 150;
 
+// The preview pulls in KaTeX + highlight.js; load it only when a preview is first shown.
+const Preview = lazy(() => import("@/components/preview/Preview").then((m) => ({ default: m.Preview })));
+
 export function Workspace() {
   const { docs, activeId, mode, newDoc, isMobile, sidebarVisible, toggleSidebar, focus } = useApp();
   const prefs = usePrefs();
   const wide = useMediaQuery("(min-width: 1100px)");
   const doc = docs.find((d) => d.id === activeId);
-  const autosave = useAutosave();
+  const autosave = useAutosave(prefs.saveDelay);
   const { flush, schedule } = autosave;
 
   // Content is loaded once per document (after flushing the previous one), then owned by the editor.
@@ -47,6 +50,18 @@ export function Workspace() {
       cancelled = true;
     };
   }, [activeId, flush]);
+
+  // ⌘S / Ctrl+S saves right away (and keeps the browser's "Save page" dialog away).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && !e.shiftKey && !e.altKey && e.code === "KeyS") {
+        e.preventDefault();
+        void flush();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [flush]);
 
   // Preview mode shows the newest text immediately.
   useEffect(() => {
@@ -135,7 +150,9 @@ export function Workspace() {
         )}
         {ready && showPreview && (
           <div className="min-w-0 flex-1 bg-background">
-            <Preview ref={preview} source={source} calculations={prefs.calculations} onScrollLine={mode === "preview" ? track : undefined} />
+            <Suspense fallback={null}>
+              <Preview ref={preview} source={source} calculations={prefs.calculations} onScrollLine={mode === "preview" ? track : undefined} />
+            </Suspense>
           </div>
         )}
         {ready && outlineAvailable && prefs.outlineOpen && <Outline headings={headings} active={activeHeading} onSelect={goTo} />}

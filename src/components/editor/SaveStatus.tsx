@@ -4,7 +4,7 @@ import { cn } from "datui";
 import { Check } from "lucide-react";
 import type { SaveStatus as Status } from "@/hooks/useAutosave";
 
-export function SaveStatus({ status }: { status: Status }) {
+export function SaveStatus({ status, compact = false }: { status: Status; compact?: boolean }) {
   const label = { idle: "", pending: "Saving…", saving: "Saving…", saved: "Saved", error: "Not saved · retrying" }[status];
   return (
     <span
@@ -17,7 +17,8 @@ export function SaveStatus({ status }: { status: Status }) {
       )}
     >
       {status === "saved" && <Check className="size-3.5" aria-hidden />}
-      {label}
+      {compact && status === "error" && <span aria-hidden>!</span>}
+      <span className={cn(compact && "sr-only")}>{label}</span>
     </span>
   );
 }

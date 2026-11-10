@@ -1,13 +1,13 @@
 "use client";
 
 import { ActionSheetItem, IconButton, SegmentedControl, Tooltip, cn } from "datui";
-import { Download, FileUp, ListTree, Maximize2, Minimize2, MoreHorizontal, PanelLeft, Type } from "lucide-react";
+import { BookOpen, Download, FileUp, ListTree, Maximize2, Minimize2, MoreHorizontal, PanelLeft, PenLine, Type } from "lucide-react";
 import { useRef, useState } from "react";
 import { DocMenu } from "@/components/app/DocMenu";
 import { useApp } from "@/components/app/context";
 import type { SaveStatus as Status } from "@/hooks/useAutosave";
 import { type EditorMode, setPrefs, usePrefs } from "@/hooks/usePrefs";
-import { downloadFile, fileName } from "@/lib/files";
+import { ExportSheet } from "@/components/export/ExportSheet";
 import type { Doc } from "@/lib/storage/types";
 import { SaveStatus } from "./SaveStatus";
 import { TitleInput } from "./TitleInput";
@@ -29,14 +29,22 @@ export function EditorHeader({ doc, status, outlineAvailable }: { doc: Doc; stat
   const { folders, mode, setMode, focus, setFocus, isMobile, sidebarVisible, toggleSidebar, importFiles } = app;
   const folder = folders.find((f) => f.id === doc.folderId);
   const moreRef = useRef<HTMLElement>(null);
+  const exportRef = useRef<HTMLElement>(null);
+  const [exportOpen, setExportOpen] = useState(false);
   const titleRef = useRef<HTMLInputElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const modes = [
-    { value: "edit", label: "Edit" },
-    { value: "preview", label: "Preview" },
-    ...(isMobile ? [] : [{ value: "split", label: "Split" }]),
-  ];
+  // Phones get icon-only modes so the title keeps its room.
+  const modes = isMobile
+    ? [
+        { value: "edit", label: <PenLine className="size-4" aria-label="Edit" /> },
+        { value: "preview", label: <BookOpen className="size-4" aria-label="Preview" /> },
+      ]
+    : [
+        { value: "edit", label: "Edit" },
+        { value: "preview", label: "Preview" },
+        { value: "split", label: "Split" },
+      ];
 
   return (
     <header
@@ -64,11 +72,11 @@ export function EditorHeader({ doc, status, outlineAvailable }: { doc: Doc; stat
         <TitleInput key={doc.id} doc={doc} ref={titleRef} />
       </nav>
 
-      <SaveStatus status={status} />
+      <SaveStatus status={status} compact={isMobile} />
 
       <SegmentedControl
         aria-label="Editor view"
-        className={cn("shrink-0", isMobile ? "w-[168px]" : "w-[252px]")}
+        className={cn("shrink-0", isMobile ? "w-[92px]" : "w-[252px]")}
         options={modes}
         value={mode}
         onChange={(v) => setMode(v as EditorMode)}
@@ -96,13 +104,14 @@ export function EditorHeader({ doc, status, outlineAvailable }: { doc: Doc; stat
         </HeaderButton>
       )}
       {!isMobile && (
-        <HeaderButton label="Export as Markdown" onClick={() => downloadFile(fileName(doc.title, "md"), doc.content)}>
+        <HeaderButton label="Export" ref={exportRef} aria-haspopup="menu" onClick={() => setExportOpen(true)}>
           <Download />
         </HeaderButton>
       )}
       <HeaderButton label="More actions" ref={moreRef} aria-haspopup="menu" onClick={() => setMenuOpen(true)}>
         <MoreHorizontal />
       </HeaderButton>
+      <ExportSheet doc={doc} open={exportOpen} onOpenChange={setExportOpen} anchorRef={exportRef} />
       <DocMenu
         doc={doc}
         open={menuOpen}
@@ -119,7 +128,7 @@ export function EditorHeader({ doc, status, outlineAvailable }: { doc: Doc; stat
           Typewriter mode
         </ActionSheetItem>
         <ActionSheetItem before={<FileUp />} onClick={() => void importFiles()}>
-          Import Markdown files…
+          Import Markdown or .zip…
         </ActionSheetItem>
       </DocMenu>
     </header>

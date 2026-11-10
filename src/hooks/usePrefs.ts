@@ -3,6 +3,8 @@ import { useSyncExternalStore } from "react";
 
 export type EditorMode = "edit" | "preview" | "split";
 export type Theme = "light" | "dark" | "system";
+export type FontFamily = "sans" | "serif" | "mono";
+export type EditorWidth = "narrow" | "medium" | "wide" | "full";
 
 export interface Prefs {
   theme: Theme;
@@ -15,6 +17,11 @@ export interface Prefs {
   typewriter: boolean;
   outlineOpen: boolean;
   calculations: boolean;
+  fontFamily: FontFamily;
+  lineHeight: number;
+  editorWidth: EditorWidth;
+  /** Autosave debounce in ms. */
+  saveDelay: number;
 }
 
 const KEY = "datmd:prefs";
@@ -29,7 +36,19 @@ const DEFAULTS: Prefs = {
   typewriter: false,
   outlineOpen: true,
   calculations: true,
+  fontFamily: "sans",
+  lineHeight: 1.75,
+  editorWidth: "medium",
+  saveDelay: 400,
 };
+
+export const FONT_STACKS: Record<FontFamily, string> = {
+  sans: "var(--dt-font-sans)",
+  serif: 'var(--font-serif), "Iowan Old Style", Charter, Georgia, serif',
+  mono: "var(--dt-font-mono)",
+};
+
+export const EDITOR_WIDTHS: Record<EditorWidth, string> = { narrow: "600px", medium: "720px", wide: "880px", full: "100%" };
 
 let current: Prefs = DEFAULTS;
 const listeners = new Set<() => void>();
