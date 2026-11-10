@@ -8,6 +8,13 @@
 
 A calm, local-first Markdown editor for the web that saves as you type, does the math for you, and keeps your notes on your device.
 
+<br>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./src/assets/screenshots/readme-dark.webp" />
+  <img src="./src/assets/screenshots/readme-light.webp" width="100%" alt="datmd in split view: Markdown source with inline calculation results on the left, the rendered note with a callout, task list, table and KaTeX formula on the right, plus folders, pinned and recent notes in the sidebar and an outline panel." style="border-radius: 12px;" />
+</picture>
+
 </div>
 
 ## ✨ Key Features
