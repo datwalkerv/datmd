@@ -8,6 +8,8 @@ import { highlightSelectionMatches, search, searchKeymap } from "@codemirror/sea
 import { Compartment, EditorSelection, EditorState } from "@codemirror/state";
 import { drawSelection, dropCursor, EditorView, keymap, placeholder } from "@codemirror/view";
 import { useEffect, useImperativeHandle, useRef } from "react";
+import { subscribeRates } from "@/lib/calculations/rates";
+import { inlineCalculations, ratesChanged } from "./calcExtension";
 import { fenceLanguages, slashCommands } from "./completions";
 import { insertCodeBlock, insertLink, setHeading, toggleLinePrefix, toggleWrap } from "./formatting";
 import { editorHighlight, editorTheme } from "./theme";
@@ -22,6 +24,7 @@ interface Props {
   onScrollLine?: (line: number, fraction: number, reading: number) => void;
   autoFocus?: boolean;
   typewriter?: boolean;
+  calculations?: boolean;
   ref?: React.Ref<EditorHandle>;
 }
 
@@ -43,10 +46,11 @@ const typewriterMode = [
 ];
 
 /** Uncontrolled: mount with `key={docId}`; content flows out via onChange only. */
-export function MarkdownEditor({ initial, onChange, onScrollLine, autoFocus, typewriter = false, ref }: Props) {
+export function MarkdownEditor({ initial, onChange, onScrollLine, autoFocus, typewriter = false, calculations = true, ref }: Props) {
   const host = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView>(null);
   const typewriterSlot = useRef(new Compartment());
+  const calcSlot = useRef(new Compartment());
   const cb = useRef({ onChange, onScrollLine });
   cb.current = { onChange, onScrollLine };
 
@@ -62,6 +66,7 @@ export function MarkdownEditor({ initial, onChange, onScrollLine, autoFocus, typ
           closeBrackets(),
           autocompletion({ override: [slashCommands, fenceLanguages], icons: false }),
           typewriterSlot.current.of(typewriter ? typewriterMode : []),
+          calcSlot.current.of(calculations ? inlineCalculations : []),
           search({ top: false }),
           highlightSelectionMatches(),
           EditorView.lineWrapping,
@@ -123,6 +128,12 @@ export function MarkdownEditor({ initial, onChange, onScrollLine, autoFocus, typ
   useEffect(() => {
     viewRef.current?.dispatch({ effects: typewriterSlot.current.reconfigure(typewriter ? typewriterMode : []) });
   }, [typewriter]);
+
+  useEffect(() => {
+    viewRef.current?.dispatch({ effects: calcSlot.current.reconfigure(calculations ? inlineCalculations : []) });
+  }, [calculations]);
+
+  useEffect(() => subscribeRates(() => viewRef.current?.dispatch({ effects: ratesChanged.of(null) })), []);
 
   useImperativeHandle(ref, () => ({
     scrollToLine(line) {

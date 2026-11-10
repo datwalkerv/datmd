@@ -1,6 +1,6 @@
 "use client";
 
-import { FormItem, ModalPage, ModalPageContent, ModalPageHeader, SegmentedControl, Slider } from "datui";
+import { FormItem, ModalPage, ModalPageContent, ModalPageHeader, SegmentedControl, Slider, Switch } from "datui";
 import { MOD } from "@/components/editor/EditorHeader";
 import { type EditorMode, setPrefs, type Theme, usePrefs } from "@/hooks/usePrefs";
 
@@ -67,6 +67,12 @@ export function SettingsModal({ open, onClose }: { open: boolean; onClose: () =>
             onChange={(v) => setPrefs({ fontSize: v as number })}
             getAriaLabel={() => "Text size"}
           />
+        </FormItem>
+        <FormItem top="Inline calculations" bottom="Shows results after lines like “20% of 150” or “$30 in EUR”. Your text is never changed. Currency rates come from the European Central Bank and are fetched only when a note uses currencies.">
+          <label className="flex items-center justify-between gap-4 text-[14px]">
+            Show results
+            <Switch checked={prefs.calculations} onCheckedChange={(on) => setPrefs({ calculations: on })} />
+          </label>
         </FormItem>
         <FormItem top="Keyboard shortcuts">
           <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-1.5 text-[13px]">

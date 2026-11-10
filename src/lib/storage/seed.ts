@@ -33,6 +33,33 @@ Write in **Markdown**: *italic*, **bold**, ~~strikethrough~~, \`inline code\` an
 const note = "Code blocks keep their formatting.";
 \`\`\`
 
+> [!TIP] Callouts
+> Start a quote with \`[!NOTE]\`, \`[!TIP]\`, \`[!IMPORTANT]\`, \`[!WARNING]\` or \`[!CAUTION]\`.
+
+## Math and diagrams
+
+The famous one: $e^{i\\pi} + 1 = 0$
+
+$$
+\\int_0^1 x^2\\,dx = \\frac{1}{3}
+$$
+
+\`\`\`mermaid
+graph LR
+  Idea --> Draft --> Edit --> Publish
+\`\`\`
+
+## Inline calculations
+
+Lines that are calculations show their result. Your text is never changed.
+
+- 20 + 30
+- 20% of 150
+- 5 km in miles
+- sqrt(16)
+- 255 in hex
+- $30 in EUR
+
 Footnotes work too.[^1]
 
 [^1]: Like this one.

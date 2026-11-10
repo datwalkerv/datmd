@@ -1,6 +1,10 @@
 "use client";
 
-import { useImperativeHandle, useMemo, useRef } from "react";
+import "katex/dist/katex.min.css";
+import { useColorScheme } from "datui";
+import { useImperativeHandle, useLayoutEffect, useMemo, useRef, useSyncExternalStore } from "react";
+import { getRates, requestRates, subscribeRates } from "@/lib/calculations/rates";
+import { hydrateMermaid } from "@/lib/markdown/mermaid";
 import { renderMarkdown } from "@/lib/markdown/render";
 
 export interface PreviewHandle {
@@ -13,8 +17,10 @@ export function Preview({
   source,
   ref,
   onScrollLine,
+  calculations = true,
 }: {
   source: string;
+  calculations?: boolean;
   ref?: React.Ref<PreviewHandle>;
   /** Source line of the first block visible at the top. */
   onScrollLine?: (line: number) => void;
@@ -34,7 +40,17 @@ export function Preview({
       }
     });
   };
-  const html = useMemo(() => renderMarkdown(source), [source]);
+  const rates = useSyncExternalStore(subscribeRates, getRates, () => null);
+  const dark = useColorScheme() === "dark";
+  const html = useMemo(
+    () => renderMarkdown(source, calculations ? { calc: { rates, onNeedRates: requestRates } } : {}),
+    [source, rates, calculations],
+  );
+
+  // Diagrams are drawn after each render (from cache when unchanged, so typing doesn't flicker them).
+  useLayoutEffect(() => {
+    if (root.current && html.includes("language-mermaid")) hydrateMermaid(root.current, dark);
+  }, [html, dark]);
 
   useImperativeHandle(ref, () => ({
     scrollToLine(line, fraction) {

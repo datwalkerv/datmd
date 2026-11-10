@@ -14,6 +14,7 @@ export interface Prefs {
   collapsedSections: string[];
   typewriter: boolean;
   outlineOpen: boolean;
+  calculations: boolean;
 }
 
 const KEY = "datmd:prefs";
@@ -27,6 +28,7 @@ const DEFAULTS: Prefs = {
   collapsedSections: [],
   typewriter: false,
   outlineOpen: true,
+  calculations: true,
 };
 
 let current: Prefs = DEFAULTS;

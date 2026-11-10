@@ -119,6 +119,7 @@ export function Workspace() {
               initial={loaded.content}
               autoFocus={!isMobile && !doc.content}
               typewriter={prefs.typewriter}
+              calculations={prefs.calculations}
               onChange={(text) => {
                 latest.current = text;
                 schedule(doc.id, text);
@@ -134,7 +135,7 @@ export function Workspace() {
         )}
         {ready && showPreview && (
           <div className="min-w-0 flex-1 bg-background">
-            <Preview ref={preview} source={source} onScrollLine={mode === "preview" ? track : undefined} />
+            <Preview ref={preview} source={source} calculations={prefs.calculations} onScrollLine={mode === "preview" ? track : undefined} />
           </div>
         )}
         {ready && outlineAvailable && prefs.outlineOpen && <Outline headings={headings} active={activeHeading} onSelect={goTo} />}
