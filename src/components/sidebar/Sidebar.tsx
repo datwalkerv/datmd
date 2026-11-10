@@ -94,7 +94,7 @@ export function Sidebar() {
   return (
     <div className="flex h-full flex-col">
       <div className="flex h-12 shrink-0 items-center gap-2 pr-2 pl-4">
-        <img src="/icon.svg" alt="" className="size-5 rounded-[5px] ring-1 ring-separator" />
+        <img src="/icon.svg" alt="" className="size-5" />
         <span className="text-[15px] font-semibold tracking-tight">datmd</span>
         {isMobile ? (
           // No tooltip here: the drawer focuses this button on open and the tooltip would pop up.

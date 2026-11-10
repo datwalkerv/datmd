@@ -10,7 +10,10 @@ export const metadata: Metadata = {
   title: "datmd",
   description: "A calm, local-first Markdown editor.",
   applicationName: "datmd",
-  icons: { icon: "/icon.svg" },
+  icons: {
+    icon: [{ url: "/icon.svg", type: "image/svg+xml" }, { url: "/icon-512.png", type: "image/png", sizes: "512x512" }],
+    apple: "/icon-180.png",
+  },
 };
 
 export const viewport: Viewport = {

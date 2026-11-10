@@ -103,7 +103,7 @@ export default function HomePage() {
         <header className="sticky top-0 z-40 border-b border-separator bg-background/90 backdrop-blur-sm">
           <nav aria-label="Main" className="mx-auto flex h-14 max-w-6xl items-center gap-6 px-5 md:px-8">
             <a href="#top" className="flex items-center gap-2 rounded-sm text-[16px] font-semibold tracking-tight outline-none focus-visible:focus-ring">
-              <img src="/icon.svg" alt="" className="size-6 rounded-md ring-1 ring-separator" />
+              <img src="/icon.svg" alt="" className="size-6" />
               datmd
             </a>
             <div className="hidden items-center gap-6 text-[14px] text-muted-foreground md:flex">
@@ -380,7 +380,7 @@ export default function HomePage() {
         <footer className="border-t border-separator">
           <div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 py-8 text-[13px] text-muted-foreground sm:flex-row sm:items-center md:px-8">
             <span className="flex items-center gap-2 font-semibold text-foreground">
-              <img src="/icon.svg" alt="" className="size-5 rounded-[5px] ring-1 ring-separator" />
+              <img src="/icon.svg" alt="" className="size-5" />
               datmd
             </span>
             <span>A calm Markdown editor. Notes stay in your browser.</span>
