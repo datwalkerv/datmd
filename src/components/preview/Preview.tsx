@@ -74,8 +74,10 @@ export function Preview({
     },
   }));
 
+  // `relative` keeps absolutely-positioned descendants (sr-only footnote label, KaTeX MathML)
+  // inside this scroller; without it they stretch the whole page and make it scroll.
   return (
-    <div ref={root} className="h-full overflow-y-auto" tabIndex={-1} onScroll={reportScroll}>
+    <div ref={root} className="relative h-full overflow-y-auto" tabIndex={-1} onScroll={reportScroll}>
       {source.trim() ? (
         // Sanitized in renderMarkdown.
         <article className="prose-datmd" dangerouslySetInnerHTML={{ __html: html }} />
