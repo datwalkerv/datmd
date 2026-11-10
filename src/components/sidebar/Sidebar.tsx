@@ -15,7 +15,7 @@ import {
 } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { Button, IconButton, Placeholder, Tooltip } from "datui";
-import { FileText, FileUp, FolderPlus, PanelLeftClose, Settings, SquarePen } from "lucide-react";
+import { FileText, FileUp, FolderPlus, LayoutTemplate, PanelLeftClose, Search, Settings, SquarePen } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useApp } from "@/components/app/context";
 import { MOD } from "@/components/editor/EditorHeader";
@@ -37,7 +37,7 @@ const collision: CollisionDetection = (args) => {
 };
 
 export function Sidebar() {
-  const { docs, folders, newDoc, importFiles, openSettings, toggleSidebar, isMobile, notify } = useApp();
+  const { docs, folders, newDoc, importFiles, openSettings, openSearch, openTemplates, toggleSidebar, isMobile, notify } = useApp();
   const [renaming, setRenaming] = useState<string | null>(null);
   const [dragging, setDragging] = useState<Doc | null>(null);
 
@@ -114,11 +114,28 @@ export function Sidebar() {
         <Button size="s" variant="secondary" appearance="neutral" stretched before={<SquarePen className="size-4" />} onClick={() => void newDoc()}>
           New note
         </Button>
+        <Tooltip title="New from template" hoverDelay={400}>
+          <IconButton size="s" label="New from template" className="text-muted-foreground" onClick={openTemplates}>
+            <LayoutTemplate />
+          </IconButton>
+        </Tooltip>
         <Tooltip title="New folder" hoverDelay={400}>
           <IconButton size="s" label="New folder" className="text-muted-foreground" onClick={() => void addFolder()}>
             <FolderPlus />
           </IconButton>
         </Tooltip>
+      </div>
+
+      <div className="shrink-0 px-3 pb-2">
+        <button
+          type="button"
+          onClick={openSearch}
+          className="flex h-8 w-full items-center gap-2 rounded-md border border-separator bg-background px-2.5 text-[13px] text-subtle-foreground outline-none transition-colors hover:border-border hover:text-muted-foreground focus-visible:focus-ring"
+        >
+          <Search className="size-3.5" aria-hidden />
+          Search
+          <kbd className="ml-auto font-sans text-[11px]">{MOD}K</kbd>
+        </button>
       </div>
 
       <nav aria-label="Note list" className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-4">

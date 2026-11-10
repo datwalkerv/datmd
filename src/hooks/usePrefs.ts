@@ -12,6 +12,8 @@ export interface Prefs {
   lastDocId: string | null;
   collapsedFolders: string[];
   collapsedSections: string[];
+  typewriter: boolean;
+  outlineOpen: boolean;
 }
 
 const KEY = "datmd:prefs";
@@ -23,6 +25,8 @@ const DEFAULTS: Prefs = {
   lastDocId: null,
   collapsedFolders: [],
   collapsedSections: [],
+  typewriter: false,
+  outlineOpen: true,
 };
 
 let current: Prefs = DEFAULTS;

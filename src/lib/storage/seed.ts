@@ -9,8 +9,10 @@ A quiet place to write. Everything you type is saved on this device automaticall
 
 Write in **Markdown**: *italic*, **bold**, ~~strikethrough~~, \`inline code\` and [links](https://commonmark.org).
 
+- Press ⌘K to search every note
+- Type **/** at the start of a line for headings, lists, tables and more
 - Switch between **Edit**, **Preview** and **Split** in the header (⌘1 · ⌘2 · ⌘3)
-- Press ⌘⇧F for focus mode
+- Press ⌘⇧F for focus mode, ⌘⌥T for typewriter mode
 - Drag notes in the sidebar to reorder them or drop them on a folder
 
 ### Tasks
@@ -24,7 +26,7 @@ Write in **Markdown**: *italic*, **bold**, ~~strikethrough~~, \`inline code\` an
 |---|---|
 | ⌘B | Bold |
 | ⌘I | Italic |
-| ⌘K | Link |
+| ⌘⇧K | Link |
 | ⌘F | Find |
 
 \`\`\`ts

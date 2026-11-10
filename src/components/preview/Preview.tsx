@@ -9,8 +9,31 @@ export interface PreviewHandle {
 
 const PAD = 48; // matches the editor's top padding so line N sits at the same height in both panes
 
-export function Preview({ source, ref }: { source: string; ref?: React.Ref<PreviewHandle> }) {
+export function Preview({
+  source,
+  ref,
+  onScrollLine,
+}: {
+  source: string;
+  ref?: React.Ref<PreviewHandle>;
+  /** Source line of the first block visible at the top. */
+  onScrollLine?: (line: number) => void;
+}) {
   const root = useRef<HTMLDivElement>(null);
+  const frame = useRef(0);
+
+  const reportScroll = () => {
+    if (!onScrollLine) return;
+    cancelAnimationFrame(frame.current);
+    frame.current = requestAnimationFrame(() => {
+      const el = root.current;
+      if (!el) return;
+      const top = el.getBoundingClientRect().top + PAD + 8; // just below where scrollToLine puts a block
+      for (const n of el.querySelectorAll<HTMLElement>("[data-line]")) {
+        if (n.getBoundingClientRect().bottom > top) return onScrollLine(Number(n.dataset.line));
+      }
+    });
+  };
   const html = useMemo(() => renderMarkdown(source), [source]);
 
   useImperativeHandle(ref, () => ({
@@ -36,7 +59,7 @@ export function Preview({ source, ref }: { source: string; ref?: React.Ref<Previ
   }));
 
   return (
-    <div ref={root} className="h-full overflow-y-auto" tabIndex={-1}>
+    <div ref={root} className="h-full overflow-y-auto" tabIndex={-1} onScroll={reportScroll}>
       {source.trim() ? (
         // Sanitized in renderMarkdown.
         <article className="prose-datmd" dangerouslySetInnerHTML={{ __html: html }} />

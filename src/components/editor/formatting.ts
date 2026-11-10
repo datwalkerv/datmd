@@ -43,3 +43,75 @@ export const insertLink: StateCommand = ({ state, dispatch }) => {
   dispatch(state.update(tr, { scrollIntoView: true, userEvent: "input" }));
   return true;
 };
+
+/** Lines touched by the selection, each once. */
+function selectedLines(state: Parameters<StateCommand>[0]["state"]) {
+  const seen = new Set<number>();
+  const lines = [];
+  for (const r of state.selection.ranges) {
+    for (let n = state.doc.lineAt(r.from).number; n <= state.doc.lineAt(r.to).number; n++) {
+      if (!seen.has(n)) {
+        seen.add(n);
+        lines.push(state.doc.line(n));
+      }
+    }
+  }
+  return lines;
+}
+
+const HEADING = /^#{1,6}\s+/;
+
+/** Sets the heading level of the selected lines; same level again turns it back into a paragraph. */
+export const setHeading =
+  (level: number): StateCommand =>
+  ({ state, dispatch }) => {
+    const prefix = `${"#".repeat(level)} `;
+    const changes = selectedLines(state).map((line) => {
+      const m = HEADING.exec(line.text);
+      const same = m?.[0].trim().length === level;
+      return { from: line.from, to: line.from + (m?.[0].length ?? 0), insert: same ? "" : prefix };
+    });
+    dispatch(state.update({ changes, scrollIntoView: true, userEvent: "input" }));
+    return true;
+  };
+
+const LIST = /^(\s*)([-*+]\s+\[[ xX]\]\s+|[-*+]\s+|\d+[.)]\s+|>\s?)/;
+const KINDS = {
+  bullet: { test: /^\s*[-*+]\s+(?!\[[ xX]\])/, make: () => "- " },
+  task: { test: /^\s*[-*+]\s+\[[ xX]\]\s+/, make: () => "- [ ] " },
+  ordered: { test: /^\s*\d+[.)]\s+/, make: (i: number) => `${i + 1}. ` },
+  quote: { test: /^\s*>/, make: () => "> " },
+};
+
+/** Toggles a list/quote marker on the selected lines, replacing any other marker. */
+export const toggleLinePrefix =
+  (kind: keyof typeof KINDS): StateCommand =>
+  ({ state, dispatch }) => {
+    const lines = selectedLines(state).filter((l, _, all) => all.length === 1 || l.text.trim());
+    const { test, make } = KINDS[kind];
+    const remove = lines.every((l) => test.test(l.text));
+    const changes = lines.map((line, i) => {
+      const m = LIST.exec(line.text);
+      const indent = m?.[1].length ?? 0;
+      return { from: line.from + indent, to: line.from + (m?.[0].length ?? 0), insert: remove ? "" : make(i) };
+    });
+    dispatch(state.update({ changes, scrollIntoView: true, userEvent: "input" }));
+    return true;
+  };
+
+/** Wraps the selected lines in a fenced code block and puts the cursor where the language goes. */
+export const insertCodeBlock: StateCommand = ({ state, dispatch }) => {
+  const r = state.selection.main;
+  const from = state.doc.lineAt(r.from).from;
+  const to = state.doc.lineAt(r.to).to;
+  const body = state.sliceDoc(from, to);
+  dispatch(
+    state.update({
+      changes: { from, to, insert: `\`\`\`\n${body}\n\`\`\`` },
+      selection: EditorSelection.cursor(from + 3),
+      scrollIntoView: true,
+      userEvent: "input",
+    }),
+  );
+  return true;
+};

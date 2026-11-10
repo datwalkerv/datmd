@@ -8,7 +8,7 @@ export interface AppState {
   folders: Folder[];
   activeId: string | null;
   open: (id: string | null) => void;
-  newDoc: (folderId?: string | null) => Promise<void>;
+  newDoc: (folderId?: string | null, init?: { title: string; content: string }) => Promise<void>;
   importFiles: (files?: Iterable<File>) => Promise<void>;
   notify: (message: string) => void;
   mode: EditorMode;
@@ -20,6 +20,8 @@ export interface AppState {
   toggleSidebar: () => void;
   sidebarVisible: boolean;
   openSettings: () => void;
+  openSearch: () => void;
+  openTemplates: () => void;
 }
 
 export const AppContext = createContext<AppState | null>(null);

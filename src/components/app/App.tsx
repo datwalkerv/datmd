@@ -4,7 +4,9 @@ import { AppRoot, ConfigProvider, FocusTrap, Snackbar, cn, useMediaQuery } from 
 import { useLiveQuery } from "dexie-react-hooks";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Workspace } from "@/components/editor/Workspace";
+import { SearchDialog } from "@/components/search/SearchDialog";
 import { SettingsModal } from "@/components/settings/SettingsModal";
+import { TemplatePicker } from "@/components/templates/TemplatePicker";
 import { Sidebar } from "@/components/sidebar/Sidebar";
 import { type EditorMode, setPrefs, usePrefs } from "@/hooks/usePrefs";
 import { pickMarkdownFiles, readMarkdownFiles } from "@/lib/files";
@@ -27,6 +29,8 @@ export function App() {
   const [focus, setFocus] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [templatesOpen, setTemplatesOpen] = useState(false);
   const [snack, setSnack] = useState<{ id: number; text: string } | null>(null);
 
   const notify = useCallback((text: string) => setSnack({ id: Date.now(), text }), []);
@@ -38,9 +42,9 @@ export function App() {
   }, []);
 
   const newDoc = useCallback(
-    async (folderId: string | null = null) => {
+    async (folderId: string | null = null, init?: { title: string; content: string }) => {
       try {
-        open((await createDoc({ folderId })).id);
+        open((await createDoc({ ...init, folderId })).id);
       } catch {
         notify("Couldn't create the note. Storage may be full or blocked.");
       }
@@ -99,13 +103,16 @@ export function App() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const mod = e.metaKey || e.ctrlKey;
-      if (e.key === "Escape" && focus && !settingsOpen) return setFocus(false);
+      if (e.key === "Escape" && focus && !settingsOpen && !searchOpen && !templatesOpen) return setFocus(false);
       if (!mod) return;
       const hit = (fn: () => void) => {
         e.preventDefault();
         fn();
       };
       if (e.altKey && e.code === "KeyN") hit(() => void newDoc());
+      else if (!e.shiftKey && !e.altKey && e.code === "KeyK") hit(() => setSearchOpen(true));
+      else if (e.altKey && e.code === "KeyT") hit(() => setPrefs((p) => ({ typewriter: !p.typewriter })));
+      else if (e.altKey && e.code === "KeyO") hit(() => setPrefs((p) => ({ outlineOpen: !p.outlineOpen })));
       else if (e.shiftKey && e.code === "KeyF") hit(() => setFocus((f) => !f));
       else if (e.code === "Backslash") hit(toggleSidebar);
       else if (e.key === ",") hit(() => setSettingsOpen(true));
@@ -113,7 +120,7 @@ export function App() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [focus, settingsOpen, newDoc, toggleSidebar, setMode]);
+  }, [focus, settingsOpen, searchOpen, templatesOpen, newDoc, toggleSidebar, setMode]);
 
   // Dropping .md files anywhere imports them (capture phase so the editor doesn't paste file text instead).
   useEffect(() => {
@@ -152,6 +159,8 @@ export function App() {
             toggleSidebar,
             sidebarVisible,
             openSettings: () => setSettingsOpen(true),
+            openSearch: () => setSearchOpen(true),
+            openTemplates: () => setTemplatesOpen(true),
           }
         : null,
     [docs, folders, activeId, open, newDoc, importFiles, notify, effectiveMode, setMode, focus, isMobile, toggleSidebar, sidebarVisible],
@@ -203,6 +212,8 @@ export function App() {
                 <Workspace />
               </main>
               <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+              <SearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} />
+              <TemplatePicker open={templatesOpen} onClose={() => setTemplatesOpen(false)} />
             </AppContext.Provider>
           )}
         </div>

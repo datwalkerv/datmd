@@ -1,12 +1,12 @@
 "use client";
 
 import { ActionSheetItem, IconButton, SegmentedControl, Tooltip, cn } from "datui";
-import { Download, FileUp, Maximize2, Minimize2, MoreHorizontal, PanelLeft } from "lucide-react";
+import { Download, FileUp, ListTree, Maximize2, Minimize2, MoreHorizontal, PanelLeft, Type } from "lucide-react";
 import { useRef, useState } from "react";
 import { DocMenu } from "@/components/app/DocMenu";
 import { useApp } from "@/components/app/context";
 import type { SaveStatus as Status } from "@/hooks/useAutosave";
-import type { EditorMode } from "@/hooks/usePrefs";
+import { type EditorMode, setPrefs, usePrefs } from "@/hooks/usePrefs";
 import { downloadFile, fileName } from "@/lib/files";
 import type { Doc } from "@/lib/storage/types";
 import { SaveStatus } from "./SaveStatus";
@@ -23,8 +23,9 @@ function HeaderButton({ label, shortcut, ...rest }: React.ComponentProps<typeof 
   );
 }
 
-export function EditorHeader({ doc, status }: { doc: Doc; status: Status }) {
+export function EditorHeader({ doc, status, outlineAvailable }: { doc: Doc; status: Status; outlineAvailable: boolean }) {
   const app = useApp();
+  const prefs = usePrefs();
   const { folders, mode, setMode, focus, setFocus, isMobile, sidebarVisible, toggleSidebar, importFiles } = app;
   const folder = folders.find((f) => f.id === doc.folderId);
   const moreRef = useRef<HTMLElement>(null);
@@ -83,6 +84,17 @@ export function EditorHeader({ doc, status }: { doc: Doc; status: Status }) {
           {focus ? <Minimize2 /> : <Maximize2 />}
         </HeaderButton>
       )}
+      {outlineAvailable && (
+        <HeaderButton
+          label={prefs.outlineOpen ? "Hide outline" : "Show outline"}
+          shortcut={`${MOD}⌥O`}
+          aria-pressed={prefs.outlineOpen}
+          onClick={() => setPrefs({ outlineOpen: !prefs.outlineOpen })}
+          className={cn(prefs.outlineOpen && "text-foreground")}
+        >
+          <ListTree />
+        </HeaderButton>
+      )}
       {!isMobile && (
         <HeaderButton label="Export as Markdown" onClick={() => downloadFile(fileName(doc.title, "md"), doc.content)}>
           <Download />
@@ -98,6 +110,14 @@ export function EditorHeader({ doc, status }: { doc: Doc; status: Status }) {
         anchorRef={moreRef}
         onRename={() => titleRef.current?.focus()}
       >
+        <ActionSheetItem
+          before={<Type />}
+          selectable
+          checked={prefs.typewriter}
+          onClick={() => setPrefs({ typewriter: !prefs.typewriter })}
+        >
+          Typewriter mode
+        </ActionSheetItem>
         <ActionSheetItem before={<FileUp />} onClick={() => void importFiles()}>
           Import Markdown files…
         </ActionSheetItem>
