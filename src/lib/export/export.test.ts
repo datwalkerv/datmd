@@ -33,6 +33,8 @@ $$
 x^2
 $$
 
+Costs $5 and $6.
+
 ---
 
 [^n]: The footnote.

@@ -20,6 +20,9 @@ const rehypeTaskLabels = () => (tree: Root) =>
     if (n.tagName === "input" && n.properties.type === "checkbox") n.properties.ariaLabel = n.properties.checked ? "Done" : "Not done";
   });
 
+// "$30 and $40" is money, not a formula: inline math uses $$…$$ (still inline when inside a sentence).
+export const MATH_OPTIONS = { singleDollarTextMath: false };
+
 const attrs = defaultSchema.attributes ?? {};
 const schema: Schema = {
   ...defaultSchema,
@@ -37,7 +40,7 @@ const schema: Schema = {
 const processor = unified()
   .use(remarkParse)
   .use(remarkGfm)
-  .use(remarkMath)
+  .use(remarkMath, MATH_OPTIONS)
   .use(remarkCallouts)
   .use(remarkRehype)
   .use(rehypeLineMap)

@@ -21,8 +21,9 @@ import remarkMath from "remark-math";
 import remarkParse from "remark-parse";
 import { unified } from "unified";
 import { remarkCallouts } from "@/lib/markdown/callouts";
+import { MATH_OPTIONS } from "@/lib/markdown/render";
 
-const parser = unified().use(remarkParse).use(remarkGfm).use(remarkMath).use(remarkCallouts).freeze();
+const parser = unified().use(remarkParse).use(remarkGfm).use(remarkMath, MATH_OPTIONS).use(remarkCallouts).freeze();
 
 const MONO = "Consolas";
 const HEADINGS = [HeadingLevel.HEADING_1, HeadingLevel.HEADING_2, HeadingLevel.HEADING_3, HeadingLevel.HEADING_4, HeadingLevel.HEADING_5, HeadingLevel.HEADING_6];

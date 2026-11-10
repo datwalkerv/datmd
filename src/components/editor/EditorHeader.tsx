@@ -15,7 +15,14 @@ import { TitleInput } from "./TitleInput";
 const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
 export const MOD = isMac ? "⌘" : "Ctrl+";
 
-function HeaderButton({ label, shortcut, ...rest }: React.ComponentProps<typeof IconButton> & { label: string; shortcut?: string }) {
+function HeaderButton({
+  label,
+  shortcut,
+  touch,
+  ...rest
+}: React.ComponentProps<typeof IconButton> & { label: string; shortcut?: string; touch?: boolean }) {
+  // No tooltips on phones: they'd pop up whenever focus returns to a button (e.g. after closing the drawer).
+  if (touch) return <IconButton label={label} size="s" {...rest} />;
   return (
     <Tooltip title={shortcut ? `${label}  ${shortcut}` : label} hoverDelay={400}>
       <IconButton label={label} size="s" {...rest} />
@@ -55,7 +62,7 @@ export function EditorHeader({ doc, status, outlineAvailable }: { doc: Doc; stat
       )}
     >
       {(!sidebarVisible || isMobile) && (
-        <HeaderButton label={isMobile ? "Open sidebar" : "Show sidebar"} shortcut={`${MOD}\\`} onClick={toggleSidebar}>
+        <HeaderButton touch={isMobile} label={isMobile ? "Open sidebar" : "Show sidebar"} shortcut={`${MOD}\\`} onClick={toggleSidebar}>
           <PanelLeft />
         </HeaderButton>
       )}
@@ -108,7 +115,7 @@ export function EditorHeader({ doc, status, outlineAvailable }: { doc: Doc; stat
           <Download />
         </HeaderButton>
       )}
-      <HeaderButton label="More actions" ref={moreRef} aria-haspopup="menu" onClick={() => setMenuOpen(true)}>
+      <HeaderButton touch={isMobile} label="More actions" ref={moreRef} aria-haspopup="menu" onClick={() => setMenuOpen(true)}>
         <MoreHorizontal />
       </HeaderButton>
       <ExportSheet doc={doc} open={exportOpen} onOpenChange={setExportOpen} anchorRef={exportRef} />

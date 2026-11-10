@@ -27,13 +27,19 @@ describe("renderMarkdown", () => {
 
 describe("renderMarkdown: phase 3", () => {
   it("renders inline and display math with KaTeX", () => {
-    const html = renderMarkdown("Euler: $e^{i\\pi} + 1 = 0$\n\n$$\n\\int_0^1 x\\,dx\n$$");
+    const html = renderMarkdown("Euler: $$e^{i\\pi} + 1 = 0$$ inline\n\n$$\n\\int_0^1 x\\,dx\n$$");
     expect(html).toContain('class="katex"');
     expect(html).toContain("katex-display");
   });
 
+  it("treats single dollars as money, not math", () => {
+    const html = renderMarkdown("Costs $2,400 + $1,020 total");
+    expect(html).not.toContain("katex");
+    expect(html).toContain("$2,400 + $1,020");
+  });
+
   it("shows math errors inline instead of throwing", () => {
-    expect(() => renderMarkdown("$\\frac{$")).not.toThrow();
+    expect(() => renderMarkdown("$$\\frac{$$")).not.toThrow();
   });
 
   it("highlights fenced code by language only", () => {

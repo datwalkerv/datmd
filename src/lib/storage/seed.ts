@@ -38,7 +38,7 @@ const note = "Code blocks keep their formatting.";
 
 ## Math and diagrams
 
-The famous one: $e^{i\\pi} + 1 = 0$
+The famous one: $$e^{i\\pi} + 1 = 0$$ (inline math uses double dollars, so $5 stays money)
 
 $$
 \\int_0^1 x^2\\,dx = \\frac{1}{3}
